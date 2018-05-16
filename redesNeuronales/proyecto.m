@@ -1,12 +1,19 @@
-data = dlmread('../datoslimpios.csv');
+X_train = dlmread('../datos/xtrain.csv');
+y_train = dlmread('../datos/ytrain.csv');
 
-X = data(:, 2:columns(data) - 1);
-y = data(:, columns(data));
-y = y.+1;
+X_val = dlmread('../datos/xval.csv');
+y_val = dlmread('../datos/yval.csv');
 
-num_entradas = columns(X);
+X_test = dlmread('../datos/xtest.csv');
+y_test = dlmread('../datos/ytest.csv');
+
+y_train = y_train.+1;
+y_val = y_val.+1;
+y_test = y_test.+1;
+
+num_entradas = columns(X_train);
 num_ocultas = 5;
-num_etiquetas = length(unique(y));
+num_etiquetas = length(unique(y_train));
 
 lambda = 1;
 
@@ -16,14 +23,30 @@ Theta2 = pesosAleatorios(num_ocultas, num_etiquetas);
 params_rn_ini = [Theta1(:); Theta2(:)];
 options = optimset('MaxIter', 500);
 
-[J grad] = costeRN(params_rn_ini, num_entradas, num_ocultas, num_etiquetas, X, y, lambda);
-fprintf("Coste: %f\n", J);
+values = [0.01, 0.1, 0.2, 0.3, 1, 3, 0];
+lambda = 0;
 
-checkNNGradients(lambda);
+maxAccu = 0;
+bestlambda = 0;
+auxCost = 0;
 
-cost = @(t) costeRN(t, num_entradas, num_ocultas, num_etiquetas, X, y, lambda);
+for i = 1:columns(values)
+	lambda = values(i);
+	cost = @(t) costeRN(t, num_entradas, num_ocultas, num_etiquetas, X_train, y_train, lambda);
+    [params_rn, J] = fmincg(cost, params_rn_ini, options);
+	Theta11 = reshape(params_rn(1:num_ocultas * (num_entradas + 1)), num_ocultas, (num_entradas + 1));
+    Theta21 = reshape(params_rn((1 + (num_ocultas * (num_entradas + 1))):end), num_etiquetas, (num_ocultas + 1));
+    accu = accuracyNN(Theta11, Theta21, X_val, y_val);
+	if accu > maxAccu
+		maxAccu = accu;
+		bestlambda = lambda;
+		cost = auxCost;
+	end
+end
+
+cost = @(t) costeRN(t, num_entradas, num_ocultas, num_etiquetas, X_train, y_train, bestlambda);
 [params_rn, J] = fmincg(cost, params_rn_ini, options);
 Theta11 = reshape(params_rn(1:num_ocultas * (num_entradas + 1)), num_ocultas, (num_entradas + 1));
 Theta21 = reshape(params_rn((1 + (num_ocultas * (num_entradas + 1))):end), num_etiquetas, (num_ocultas + 1));
-accu = accuracyNN(Theta11, Theta21, X, y);
-fprintf("Accuracy with lambda = %f: %f\n", lambda, accu);
+accu = accuracyNN(Theta11, Theta21, X_test, y_test);
+fprintf("Accuracy %f with lambda = %f\n", accu, bestlambda);

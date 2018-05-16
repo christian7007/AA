@@ -1,28 +1,51 @@
-data = dlmread('../datoslimpios.csv');
+X_train = dlmread('../datos/xtrain.csv');
+y_train = dlmread('../datos/ytrain.csv');
 
-X = data(:, 2:columns(data) - 1);
-y = data(:, columns(data));
+X_val = dlmread('../datos/xval.csv');
+y_val = dlmread('../datos/yval.csv');
+
+X_test = dlmread('../datos/xtest.csv');
+y_test = dlmread('../datos/ytest.csv');
 
 ## REGRESION LOGISTICA
-negativos = find(y == 0);
-positivos = find(y == 1);
-
-X = [ones(length(y), 1), X];
-theta_inicial = zeros(columns(X), 1);
+X_train = [ones(length(y_train), 1), X_train];
+X_val = [ones(length(y_val), 1), X_val];
+X_test = [ones(length(y_test), 1), X_test];
+theta_inicial = zeros(columns(X_train), 1);
 
 opciones = optimset('GradObj', 'on', 'MaxIter', 500);
-[theta, cost] = fminunc(@(t)(costeLog(t, X, y)), theta_inicial, opciones);
+[theta, cost] = fminunc(@(t)(costeLog(t, X_train, y_train)), theta_inicial, opciones);
 fprintf("Coste regresion logistica: %f\n", cost);
 
-accu = accuracyLog(theta, X, y);
+accu = accuracyLog(theta, X_test, y_test);
 fprintf("Accuracy regresion logistica: %f\n", accu);
 fprintf("\n");
 
 ## REGRESION LOGISTICA REGULARIZADA
-lambda = 0.00001;
-[theta, cost] = fminunc(@(t)(costeLogReg(t, X, y, lambda)), theta_inicial, opciones);
-fprintf("Coste regresion logistica reg: %f\n", cost);
+values = [0.01, 0.1, 0.2, 0.3, 1, 3];
+lambda = 0;
 
-accu = accuracyLog(theta, X, y);
+maxAccu = 0;
+bestlambda = 0;
+auxTheta = theta_inicial;
+auxCost = 0;
+
+for i = 1:columns(values)
+	lambda = values(i);
+	[auxTheta, auxCost] = fminunc(@(t)(costeLogReg(t, X_train, y_train, lambda)), theta_inicial, opciones);
+	accu = accuracyLog(auxTheta, X_val, y_val);
+	if accu > maxAccu
+		maxAccu = accu;
+		bestlambda = lambda;
+		theta = auxTheta;
+		cost = auxCost;
+	end
+end
+
+func = @(t)(costeLogReg(t, X_train, y_train, bestlambda));
+[theta, cost] = fminunc(func, theta_inicial, opciones);
+
+accu = accuracyLog(theta, X_test, y_test);
+fprintf("Mejor lambda: %f\n", bestlambda);
 fprintf("Accuracy regresion logistica reg: %f\n", accu);
 
