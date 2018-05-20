@@ -17,17 +17,20 @@ opciones = optimset('GradObj', 'on', 'MaxIter', 500);
 [theta, cost] = fminunc(@(t)(costeLog(t, X_train, y_train)), theta_inicial, opciones);
 fprintf("Coste regresion logistica: %f\n", cost);
 
-m = rows(X_train)/100;
+%m = rows(X_train)/100;
+m = 100;
 for i = 1 : m
-	row = 1:min(i*100,rows(X_train));
+	%row = 1:min(i*100,rows(X_train));
+	row = 1:i;
 	cost = @(t) costeLogReg(t, X_train(row, :), y_train(row, :), 0);
     theta = fminunc(cost, theta_inicial, opciones);
     % error
     J(i) = costeLogReg(theta, X_train(row, :), y_train(row, :), 0);
-    Jval(i) = costeLogReg(theta, X_val, y_val, 0);
+    Jval(i) = costeLogReg(theta, X_test, y_test, 0);
 endfor
 
 plot(1:m, J, 1:m, Jval);
+legend("Train", "Val");
 axis([0 12 0 150]);
 pause;
 
