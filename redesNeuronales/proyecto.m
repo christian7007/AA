@@ -44,6 +44,19 @@ for i = 1:columns(values)
 	end
 end
 
+m = rows(X_train)/10;
+for i = 1 : m
+    cost = @(t) costeRN(t, num_entradas, num_ocultas, num_etiquetas, X_train(1:max(i*10,rows(X_train)), :), y_train(1:max(i*10,rows(y_train)), lambda);
+    [params_rn, J] = fmincg(cost, params_rn_ini, options);
+    % error
+    J(i) = costeLogReg(theta, X_train(1:max(i*10,rows(X_train)), :), y_train(1:max(i*10,rows(y_train))), 0);
+    Jval(i) = costeLogReg(theta, X_val, y_val, 0);
+endfor
+
+plot(1:m, J, 1:m, Jval);
+axis([0 12 0 150]);
+pause;
+
 cost = @(t) costeRN(t, num_entradas, num_ocultas, num_etiquetas, X_train, y_train, bestlambda);
 [params_rn, J] = fmincg(cost, params_rn_ini, options);
 Theta11 = reshape(params_rn(1:num_ocultas * (num_entradas + 1)), num_ocultas, (num_entradas + 1));
