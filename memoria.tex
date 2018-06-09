@@ -1,0 +1,175 @@
+\documentclass[11pt,spanish]{article}
+
+%% Language and font encodings
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,activeacute]{babel}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{indentfirst}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[]{hyperref}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{bera}% optional: just to have a nice mono-spaced font
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\begin{document}
+\begin{titlepage}
+	\centering
+    \includegraphics[width=8cm]{ucm-logo.png}
+    \vskip 1cm
+    
+    \centering
+    {\huge Proyecto Final Aprendizaje Automático
+    }
+    \newline
+    \newline
+    \newline
+    \newline
+    
+	\centering \large { Christian González García-Muñoz \\  José Ángel Garrido Montoya}
+    \vskip 1cm
+    \centering \Large {Curso 2017-2018}
+    \vskip 1cm
+    \centering \Large { Grupo 10 }
+	\vskip 1cm
+    \centering \large {Facultad de Informática \\ Universidad Complutense de Madrid}
+    \vskip 0.5cm
+
+\end{titlepage}
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\section{Problema}
+El problema que trata de resolver este proyecto es un problema de clasificación. El objetivo es utilizar los algoritmos de clasificación aprendidos en clase para implementar un sistema que sea capaz clasificar si una persona cobra mas o menos de 50k dolares al año usando información personal. 
+\section{Datos}
+El conjunto de datos que hemos utilizado \cite{dataset} pertenece al ``Machine Learning Repository'' de la UCI. Este conjunto de datos cuenta con 14 características, con 48842 instancias y fueron recogidos durante el año 1996.
+\newline
+
+Las características que contiene el conjunto de datos se listan a continuación: 
+
+\begin{itemize}
+    \item Edad 
+	\item Tipo de trabajo
+    \item fnlwgt
+	\item Educación
+    \item Educación numérica
+    \item Estado civil
+    \item Ocupación
+    \item Relaciones personales
+    \item Raza
+    \item Genero
+    \item Ganancias en inversiones
+    \item Perdidas en inversiones
+    \item Horas semanales de trabajo
+    \item País de origen
+    \newline
+\end{itemize}
+
+De las 14 características listadas hemos descartado Educación ya que corresponde con el campo Educación numérica y fnlwgt ya que no teníamos muy claro que representaba ese campo. 
+\subsection{Procesamiento de datos}
+Antes de comenzar a entrenar los algoritmos de aprendizaje automático era necesario un procesamiento de datos en el que convertimos los campos alfanuméricos en numéricos. Para ello usamos la librería pandas de Python. Aquí tenemos un ejemplo de como era una entrada de datos antes de ser procesada:
+\newline
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=15cm]{datos-sin-procesar.png}
+  \caption{Datos sin procesar.}
+\end{figure}
+
+Y aquí vemos un ejemplo de como quedarían los datos después de ser procesados:
+\newline
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=15cm]{datos-procesados.PNG}
+  \caption{Datos procesados.}
+\end{figure}
+
+La entrada de datos mostrada corresponde con la primera, por eso todos los valores no alfanuméricos se han sustituido por el valor 0. Ya que lo que se hace es encontrar todos los valores distintos de una columna y asignar un valor numérico de 0 a N, siendo N el numero de valores distintos de la columna menos uno.
+\newline
+
+Durante el procesamiento de datos también se separó el conjunto original de datos en tres subconjuntos, entrenamiento (60\%), validación (20\%) y testing (20\%). Esta división se realizó una sola vez antes de comenzar a comparar los algoritmos y de forma aleatoria usando la función train\_test\_split() \cite{split} de la librería de Python sciKit-learn.
+
+\section{Algoritmos usados}
+Como se menciona en la sección 1 de este documento vamos a aplicar los algoritmos de aprendizaje automático aprendidos en clase, que son \textbf{regresión logística}, \textbf{redes neuronales} y \textbf{SVM}. A continuación se explica en profundidad como se ha entrenado cada algoritmo y las pruebas realizadas para comprobar la validez de los datos.
+
+\subsection{Regresión Logística}
+Hemos usado regresión logística tanto regularizada como sin regularizar. En ambos casos hemos usado \textbf{500} iteraciones ya que después de realizar varias pruebas llegamos a la conclusión de que a partir de ese numero el resultado obtenido no mejoraba más.
+
+\subsubsection{Selección del parámetro $\lambda$}
+Para seleccionar el parámetro $\lambda$ hemos entrenado 6 modelos, uno para cada $\lambda$ perteneciente a este conjunto, [0.01, 0.1, 0.2, 0.3, 1, 3]. Cada uno de los 6 modelos fue entrenado con el subconjunto de entrenamiento y usado para predecir sobre el subconjunto de validación. El valor de $\lambda$ seleccionado fue el correspondiente con el modelo que obtuvo un accuracy mayor. En este caso el valor optimo fue $\lambda$=0.01.
+
+\subsection{Resultados finales}
+Una vez seleccionado el valor optimo de $\lambda$ para el modelo regularizado, entrenamos usando el subconjunto de datos de entrenamiento tanto el modelo regularizado como el no regularizado y les hicimos predecir sobre el subconjunto de datos de testing y se obtuvieron los siguientes resultados:
+
+\begin{itemize}
+    \item Modelo no regularizado: accuracy = 0.7488 
+	\item Modelo regularizado: accuracy = 0.8010
+\end{itemize}
+
+\subsubsection{Validez de los resultados}
+Para evaluar la validez de los resultados y comprobar que no existe ni overfitting ni underfitting hemos obtenido las curvas de aprendizaje del modelo regularizado, que es el que obtuvo un mejor resultado, con los datos de entrenamiento y testing:
+\newline
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=17cm]{curvaAprendizaje.jpg}
+  \caption{Curva aprendizaje regresión logística.}
+\end{figure}
+
+En la imagen se puede ver como no existe overfitting ya que las curvas convergen juntas y no obtiene mejor resultado la de test que la de entrenamiento. También se ve que el modelo se adapta bien a los datos ya que ambas curvas convergen en un valor del error bastante bajo.
+
+\subsection{Redes neuronales}
+Como en regresión logística, hemos usado redes neuronales tanto regularizada como sin regularizar. En este caso hemos tenido que disminuir el numero de iteraciones por cuestión de tiempos. Hemos usado \textbf{250} iteraciones.
+
+\subsubsection{Selección del parámetro $\lambda$}
+Para seleccionar el parámetro $\lambda$ hemos entrenado 6 modelos, uno para cada $\lambda$ perteneciente a este conjunto, [0.01, 0.1, 0.2, 0.3, 1, 3]. Hemos usado el mismo conjunto que en regresión logística. Cada uno de los 6 modelos fue entrenado con el subconjunto de entrenamiento y usado para predecir sobre el subconjunto de validación. El valor de $\lambda$ seleccionado fue el correspondiente con el modelo que obtuvo un accuracy mayor. En este caso el valor optimo fue $\lambda$=1.
+
+\subsection{Resultados finales}
+Igual que en regresión logística, una vez seleccionado el valor optimo de $\lambda$ para el modelo regularizado, entrenamos usando el subconjunto de datos de entrenamiento tanto el modelo regularizado como el no regularizado y les hacemos predecir sobre el subconjunto de datos de testing. Se obtuvieron los siguientes resultados:
+
+\begin{itemize}
+    \item Modelo no regularizado: accuracy = 0.7839
+	\item Modelo regularizado: accuracy = 0.7974
+\end{itemize}
+
+\subsubsection{Validez de los resultados}
+Para evaluar la validez de los resultados y comprobar que no existe ni overfitting ni underfitting hemos obtenido las curvas de aprendizaje del modelo regularizado, que es el que obtuvo un mejor resultado, con los datos de entrenamiento y testing:
+\newline
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=17cm]{redesreg.jpg}
+  \caption{Curva aprendizaje redes neuronales.}
+\end{figure}
+
+En le imagen se puede ver, como en el caso de la regresión logística, que no hay overfitting ya que las curvas no divergen y que los datos se ajustan bien a los datos, por lo que no hay underfitting, ya que convergen en un valor del error bajo.
+
+\subsection{SVM}
+Hemos usado SVM con el kernel GAussiano. Debido a la lentitud de este algoritmo hemos tenido que limitar las pruebas realizadas en los anteriores para optimizar los parámetros y eliminar la evaluación de la validez de los resultados.
+
+\subsubsection{Selección de los parámetros C y $\sigma$}
+Para seleccionar los parámetros C $\sigma$ hemos entrenado 9 modelos, usando todas los combinaciones con C y $\sigma$ en el siguiente conjunto de valores, [0.01, 0.1, 1]. Cada uno de los 9 modelos fue entrenado con el subconjunto de entrenamiento y usado para predecir sobre el subconjunto de validación. El valor de C y $\sigma$ seleccionado fue el correspondiente con el modelo que obtuvo un accuracy mayor. En este caso los valores óptimos fue C=1 y $\sigma$=1.
+
+\subsection{Resultados final}
+Una vez obtenidos los valores óptimos para los parámetros C y $\sigma$ hemos entrenado un modelo utilizando estos parámetros y el subconjunto de datos de entrenamiento y lo hemos hecho predecir usando los datos de testing, igual que con los algoritmos anteriores, obteniendo un accuracy de 0,737254.
+
+\section{Conclusiones}
+
+\begin{thebibliography}{15}
+	\bibitem{dataset} Adult Data Set \url{https://archive.ics.uci.edu/ml/datasets/adult}
+    \bibitem{split} Functión train\_test\_split() 
+    	\url{http://scikit-learn.org/0.16/modules/generated/sklearn.cross_validation.train_test_split.html}
+\end{thebibliography}
+\end{document}
